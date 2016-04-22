@@ -1,0 +1,10 @@
+var = Val
+dDeformRes = 2
+SOptions.SigmaFluid = 8
+SOptions.SigmaDiff = 1
+SOptions.Interpolation = 'Linear'
+SOptions.Alpha = 2
+SOptions.Similarity = 'p'
+SOptions.Registration = 'NonRigid'
+SOptions.MaxRef = []
+SOptions.Verbose = 1

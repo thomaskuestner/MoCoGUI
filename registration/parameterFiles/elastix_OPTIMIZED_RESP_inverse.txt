@@ -1,0 +1,94 @@
+(FixedInternalImagePixelType "float")
+(MovingInternalImagePixelType "float")
+(UseDirectionCosines "false")
+
+
+// **************** Main Components **************************
+
+(Registration "MultiResolutionRegistration")
+
+(Interpolator "BSplineInterpolatorFloat")
+
+(ResampleInterpolator "FinalBSplineInterpolatorFloat")
+
+(Resampler "DefaultResampler")
+
+
+(FixedImagePyramid "FixedRecursiveImagePyramid")
+
+(MovingImagePyramid "MovingRecursiveImagePyramid")
+
+
+(Optimizer "AdaptiveStochasticGradientDescent")
+
+(Transform "BSplineTransform")
+
+// (Metric "AdvancedMattesMutualInformation")
+(Metric "DisplacementMagnitudePenalty")
+
+(ImageSampler "Random")
+
+
+
+// ***************** Transformation **************************
+
+(BSplineTransformSplineOrder 3)
+(PassiveEdgeWidth 0)
+
+//(GridSpacingSchedule 1.0 1.0 1.0)
+(FinalGridSpacingInPhysicalUnits 20 20 20)
+
+(HowToCombineTransforms "Compose")
+
+
+
+// ******************* Similarity measure / Metric *********************
+
+(NumberOfHistogramBins 64)
+(CheckNumberOfSamples "true")
+
+
+
+
+// ************** Registration / Multiresolution ****************
+
+(NumberOfResolutions 4)
+
+(ErodeMask "false")
+
+
+
+// ******************* Optimizer ****************************
+
+(MaximumNumberOfIterations 1000)
+
+(SP_a 300 2000 8000 35000)
+
+(AutomaticParameterEstimation "false")
+
+
+
+// **************** Image sampling **********************
+
+(NumberOfSpatialSamples 2000)
+
+(NewSamplesEveryIteration "true")
+
+
+
+
+// ************* Interpolation and Resampling ****************
+
+(BSplineInterpolationOrder 1 2 2 3)
+
+
+(FinalBSplineInterpolationOrder 3)
+
+(DefaultPixelValue 0)
+
+(WriteResultImage "true")
+(WriteTransformParametersEachIteration "false" )
+(CompressResultImage "false" )
+(WriteResultImageAfterEachResolution "false" )
+(ResultImagePixelType "float")
+(ResultImageFormat "mhd")

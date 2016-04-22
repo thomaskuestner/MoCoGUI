@@ -1,0 +1,9 @@
+var = Val % DO NOT CHANGE THIS LINE!
+dDeformRes = 0
+SOptions.PyrMax = 4 
+SOptions.PyrMin = 0
+SOptions.PreFilt = 0        % Pre-filtering
+SOptions.MedFilt = 1        % No median filtering
+SOptions.Algorithm = 'fast'
+SOptions.Nf = 3 % number of filters used in derivatives
+SOptions.Interpolation = 'cubicOMOMS' % interpolation for transformation

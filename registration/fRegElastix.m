@@ -38,14 +38,15 @@ h = fwaitbar(0,'Running Registration. Please wait!'); st=0;
 
 %% prepare images
 nDimImg = ndims(dFix);
-iNGates = size(dMove, ndims(dMove)) + 1;
 if(nDimImg == 2)
+    iNGates = size(dMove, 3) + 1;
     iN3D = 1;
     dImgReg = zeros(size(dFix,1), size(dFix,2), 1, iNGates); % always 4D array: x-y-z-t
     SImg.size = [size(dFix, 1), size(dFix, 2)];
     SImg.orientation = eye(2);
     SImg.origin = [0; 0];
 elseif(nDimImg == 3)
+    iNGates = size(dMove, 4) + 1;
     if(iDim == 1) % 2D reg
         iN3D = size(dFix,3);
         SImg.size = [size(dFix, 1), size(dFix, 2)];
@@ -80,7 +81,7 @@ end
     
 for iJ=1:iN3D
     if(iDim == 1) % 2D
-        SImg.data = dImgFix(:,:,iJ);
+        SImg.data = dImgFix(:,:,1,iJ);
         cImgFix{iJ} = sprintf('imgFix%02u.mhd',iJ);
         write_mhd(cImgFix{iJ}, SImg, 'ElementType', sPrecWrite);
     else % 3D
@@ -91,7 +92,7 @@ for iJ=1:iN3D
 
     for iI=2:iNGates % moving images
         if(nDimImg == 2) % iDim = 1 forced -> just 2D reg
-            SImg.data = dImgMove(:,:,iI-1);
+            SImg.data = dImgMove(:,:,1,iI-1);
             cImgMove{iJ,iI} = sprintf('imgMove_G%02u.mhd', iI);
         elseif(nDimImg == 3)
             if(iDim == 1) % 2D

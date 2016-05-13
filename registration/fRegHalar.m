@@ -23,14 +23,15 @@ h = fwaitbar(0,'Running Registration. Please wait!'); st=0;
 
 %% prepare images
 nDimImg = ndims(dFix);
-iNGates = size(dMove, ndims(dMove)) + 1;
 if(nDimImg == 2)
+    iNGates = size(dMove, 3) + 1;
     iN3D = 1;
     dImgReg = zeros(size(dFix,1), size(dFix,2), 1, iNGates); % always 4D array: x-y-z-t
     SImg.size = [size(dFix, 1), size(dFix, 2)];
     SImg.orientation = eye(2);
     SImg.origin = [0; 0];
 elseif(nDimImg == 3)
+    iNGates = size(dMove, 4) + 1;
     if(iDim == 1) % 2D reg
         iN3D = size(dFix,3);
     else % 3D reg

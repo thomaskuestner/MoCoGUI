@@ -31,8 +31,12 @@ elseif (ndims == 2)
     img.data = img.datax.^2+img.datay.^2;
 elseif (ndims == 3)
     clear img;
-        
-    [datax datay dataz] = read_raw([ path  filesep  info.DataFile], info.Dimensions,info.DataType,'native',0,ndims);
+       
+    if(exist([path,filesep,name,extension],'file'))
+        [datax datay dataz] = read_raw([path,filesep,name,'.raw'], info.Dimensions,info.DataType,'native',0,ndims);
+    else
+        [datax datay dataz] = read_raw([ path  filesep  info.DataFile], info.Dimensions,info.DataType,'native',0,ndims);
+    end
     img = VectorImageType(size(datax),info.Offset',info.PixelDimensions',reshape(info.TransformMatrix,numel(info.PixelDimensions),numel(info.PixelDimensions)));
     
     img.datax = datax; clear datax;

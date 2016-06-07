@@ -15,7 +15,7 @@ function varargout = RegGUI(varargin)
 % (c) 2015: Thomas Kuestner, Verena Neumann
 % -------------------------------------------------------------------------
 
-% Last Modified by GUIDE v2.5 22-Apr-2016 09:53:20
+% Last Modified by GUIDE v2.5 07-Jun-2016 16:13:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -254,9 +254,13 @@ end
 
 % --- Executes on scroll wheel click while the figure is in focus.
 function RegGUI_WindowScrollWheelFcn(hObject, eventdata, handles)
+handles = fChangeSlice(handles, eventdata.VerticalScrollCount);
+guidata(hObject,handles);
 
+function handles = fChangeSlice(handles, iDir)
+% change slices
 for iJ=1:4
-    if(handles.iIndGlobal(iJ) == 0 || ~(isempty(handles.loadedImg) || isempty(handles.allReg))) % TODO: erlaube, dass man auch durch die regErgebnisse scrollen kann! => negativ für regi und positiv für loadedImg
+    if(handles.iIndGlobal(iJ) == 0 || ~(isempty(handles.loadedImg) || isempty(handles.allReg)) || iDir == 0) 
         continue;
     end
     
@@ -274,9 +278,9 @@ for iJ=1:4
         end  
     end
     % set new slice number
-    if eventdata.VerticalScrollCount < 0
+    if iDir < 0
         handles.slice(1,iJ) = max([1 handles.slice(1,iJ)-1]);
-    else
+    elseif(iDir > 0)
         handles.slice(1,iJ) = min([size(dImg, 3) handles.slice(1,iJ)+1]);
     end
     eval(sprintf('set(handles.hI%d, ''CData'', dImg(:,:,handles.slice(1,iJ)));', iJ));
@@ -286,7 +290,7 @@ for iJ=1:4
     end    
 %     eval(sprintf('set(handles.hI%d, ''CData'', dImg(:,:,handles.slice(1,iJ)));', iJ));
 end
-guidata(hObject, handles)
+
 
 %% ------------------------------------------------------------------------
 % GUI functionalities (callbacks)
@@ -1508,3 +1512,16 @@ function pb_editParam_Callback(hObject, eventdata, handles)
 if(~strcmp(handles.sParFile,'NA'))
     edit(handles.sParFile);
 end
+
+
+% --- Executes on key press with focus on RegGUI and none of its controls.
+function RegGUI_KeyPressFcn(hObject, eventdata, handles)
+       
+switch eventdata.Key
+    case {'numpad1', 'leftarrow'} % Image up
+        handles = fChangeSlice(handles, -1);
+
+    case {'numpad2', 'rightarrow'} % Image down
+        handles = fChangeSlice(handles, 1);       
+end
+guidata(hObject, handles);

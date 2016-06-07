@@ -13,7 +13,7 @@ function varargout = EvalGUI(varargin)
 % (c) 2015: Thomas Kuestner, Verena Neumann
 % -------------------------------------------------------------------------
 
-% Last Modified by GUIDE v2.5 06-Dec-2015 14:26:10
+% Last Modified by GUIDE v2.5 07-Jun-2016 16:21:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -181,14 +181,15 @@ if(handles.iActualGates < 4) % if input has less than four gates
     % pad with zeros
     handles.h.dImg = cat(4,handles.h.dImg,zeros(size(handles.h.dImg,1),size(handles.h.dImg,2),size(handles.h.dImg,3),4-size(handles.h.dImg,4)));
     handles.h.dImgReg = cat(4,handles.h.dImg,zeros(size(handles.h.dImg,1),size(handles.h.dImg,2),size(handles.h.dImg,3),4-size(handles.h.dImg,4)));
-    for iI=size(handles.h.dImg,4)+1:4
+    for iI=handles.iActualGates+1:4
         handles.h.SDeform(iI).dBx = zeros(size(handles.h.SDeform(2).dBx));
         handles.h.SDeform(iI).dBy = zeros(size(handles.h.SDeform(2).dBy));
         handles.h.SDeform(iI).dBz = zeros(size(handles.h.SDeform(2).dBz));
         handles.h.SDeform(iI).dFx = zeros(size(handles.h.SDeform(2).dFx));
         handles.h.SDeform(iI).dFy = zeros(size(handles.h.SDeform(2).dFy));
         handles.h.SDeform(iI).dFz = zeros(size(handles.h.SDeform(2).dFz));
-    end
+        handles.h.SGeo.cVoxelsize{iI} = handles.h.SGeo.cVoxelsize{1};
+    end   
 end
 
 
@@ -259,7 +260,7 @@ else
     set(handles.tRegMParm, 'String', handles.RegMParam)
     sStandardLabel = {'Image 01 (reference/fixed)'; 'Image 02'; 'Image 03'; 'Image 04'};
     for iI=1:4
-        if(~isempty(handles.h.sShownames{iI}))
+        if(iI <= length(handles.h.sShownames) && ~isempty(handles.h.sShownames{iI}))
             eval(sprintf('set(handles.txGate0%d,''String'',{sStandardLabel{iI}, handles.h.sShownames{iI}});',iI));
         else % if iNGates < 4
             eval(sprintf('set(handles.txGate0%d,''String'',sStandardLabel(iI));',iI));
@@ -288,7 +289,7 @@ if(isfield(handles,'closeFigure') && handles.closeFigure)
 end
 
 
-function EvalGUI_CloseRequestFcn(hObject, eventdata, handles)
+function EvalGUI_CloseRequestFcn(hObject, ~, handles)
 % save GUIPreference
 try
 currpath = fileparts(mfilename('fullpath'));
@@ -1137,7 +1138,7 @@ guidata(hObject, handles);
 function pb_resetContrast_Callback(hObject, eventdata, handles)
 % reset all contrasts and views
 dIMove2 = handles.h.dImg(:,:,:,2);
-colRange01 = [0, max(dIMove2(:))/2];
+% colRange01 = [0, max(dIMove2(:))/2];
 if strcmp(handles.sImageData, 'origImage');
 %     handles.colRange = [0, max(dIMove2(:))/2];
     handles.colRange = [0, max(handles.h.dImg(:))];
@@ -1164,7 +1165,7 @@ else
     errordlg('Unknown error in reset contrast function.')
 end
 
-caxis(handles.Gate01,colRange01);
+caxis(handles.Gate01,handles.colRange);
 if(~isempty(handles.colRange))
     caxis(handles.Gate02,handles.colRange);
     caxis(handles.Gate03,handles.colRange);
@@ -1741,7 +1742,10 @@ guidata(hObject, handles)
 % -------------------------------------------------------------------------
 function EvalGUI_WindowScrollWheelFcn(hObject, eventdata, handles)
 % executes on scroll wheel click while the figure is in focus
+handles = fChangeSlice(handles,eventdata.VerticalScrollCount);
+guidata(hObject,handles)
 
+function handles = fChangeSlice(handles,iDir)
 % get image arrays and deformation fields
 dIRef = handles.h.dImg(:,:,:,1);
 dIMove2 = handles.h.dImg(:,:,:,2);
@@ -1765,9 +1769,9 @@ end
 
 % get scroll events
 lMoving = true;
-if eventdata.VerticalScrollCount < 0
+if iDir < 0
     handles.slice = max([1 handles.slice - 1]);
-elseif(eventdata.VerticalScrollCount > 0)
+elseif(iDir > 0)
     handles.slice = min([size(dIRef, 3) handles.slice + 1]);
 else 
     lMoving = false;
@@ -1860,7 +1864,6 @@ else
     set(handles.text22, 'String',[num2str(handles.slice),'/',num2str(size(dIRef,3))]);
     set(handles.text23, 'String',[num2str(handles.slice),'/',num2str(size(dIRef,3))]);
 end
-guidata(hObject, handles)
 
 
 function EvalGUI_WindowButtonDownFcn(hObject, eventdata, handles)
@@ -1883,27 +1886,10 @@ try
                 
                 % contrast and brightness
                 handles.colWidth  = handles.colMax-handles.colMin;
-                handles.colWidth  = handles.colMax.*exp(-iD(1,2)*0.02);
+                handles.colWidth  = handles.colWidth.*exp(-iD(1,2)*0.02);
                 handles.colCenter = (handles.colMax+handles.colMin)/2;
                 handles.colCenter = handles.colCenter.*exp(iD(1,1)*0.02);
-                handles.colRange  = [handles.colCenter-handles.colWidth/2, handles.colCenter+handles.colWidth/2];    
-                caxis(handles.Gate01,handles.colRange);
-                if(~strcmp(handles.sImageData, 'origImage') || ~strcmp(handles.sImageData, 'regImage'))
-                    if strcmp(handles.sImageData, 'isosurface')
-                        handles.colRange = [];
-                    end
-                    if(~isempty(handles.colRange))
-                        caxis(handles.Gate02,handles.colRange);
-                        caxis(handles.Gate03,handles.colRange);
-                        caxis(handles.Gate04,handles.colRange);
-                    else % isosurface 
-                        colormap(handles.Gate02, handles.tcmap);
-                        colormap(handles.Gate03, handles.tcmap);
-                        colormap(handles.Gate04, handles.tcmap);
-                    end
-                end
-                event.VerticalScrollCount = 0;
-                EvalGUI_WindowScrollWheelFcn(hObject, event, handles); % faked workaround so that reference image is also directly scaled
+                handles = fChangeBrightnessContrast(handles);
                 guidata(hObject, handles);
         end
     else
@@ -1923,6 +1909,27 @@ guidata(hObject, handles)
 %% ------------------------------------------------------------------------
 % end Window button functions
 % -------------------------------------------------------------------------
+
+function handles = fChangeBrightnessContrast(handles)
+% change brightness and contrast
+handles.colRange  = [handles.colCenter-handles.colWidth/2, handles.colCenter+handles.colWidth/2];    
+caxis(handles.Gate01,handles.colRange);
+if(~strcmp(handles.sImageData, 'origImage') || ~strcmp(handles.sImageData, 'regImage'))
+    if strcmp(handles.sImageData, 'isosurface')
+        handles.colRange = [];
+    end
+    if(~isempty(handles.colRange))
+        caxis(handles.Gate02,handles.colRange);
+        caxis(handles.Gate03,handles.colRange);
+        caxis(handles.Gate04,handles.colRange);
+    else % isosurface 
+        colormap(handles.Gate02, handles.tcmap);
+        colormap(handles.Gate03, handles.tcmap);
+        colormap(handles.Gate04, handles.tcmap);
+    end
+end
+% event.VerticalScrollCount = 0;
+handles = fChangeSlice(handles, 0); % faked workaround so that reference image is also directly scaled
 
 
 %% ------------------------------------------------------------------------
@@ -2124,15 +2131,15 @@ handles.colRange = [min(handles.detJ2(:)/1), max(handles.detJ2(:)/1)];
 x = 1:dVoxSize{2}(1):dVoxSize{2}(1)*size(dFx2,1);
 y = 1:dVoxSize{2}(2):dVoxSize{2}(2)*size(dFx2,2);
 z = 1:dVoxSize{2}(3):dVoxSize{2}(3)*size(dFx2,3);
-handles.divF2 = divergence(x,y,z, dFx2, dFy2, dFz2)*(1); st= st+1;fwaitbar(st/steps,h);
+handles.divF2 = divergence(y,x,z, dFx2, dFy2, dFz2)*(1); st= st+1;fwaitbar(st/steps,h);
 x = 1:dVoxSize{3}(1):dVoxSize{3}(1)*size(dFx3,1);
 y = 1:dVoxSize{3}(2):dVoxSize{3}(2)*size(dFx3,2);
 z = 1:dVoxSize{3}(3):dVoxSize{3}(3)*size(dFx3,3);
-handles.divF3 = divergence(x,y,z, dFx3, dFy3, dFz3)*(1); st= st+1;fwaitbar(st/steps,h);
+handles.divF3 = divergence(y,x,z, dFx3, dFy3, dFz3)*(1); st= st+1;fwaitbar(st/steps,h);
 x = 1:dVoxSize{4}(1):dVoxSize{4}(1)*size(dFx4,1);
 y = 1:dVoxSize{4}(2):dVoxSize{4}(2)*size(dFx4,2);
 z = 1:dVoxSize{4}(3):dVoxSize{4}(3)*size(dFx4,3);
-handles.divF4 = divergence(x,y,z, dFx4, dFy4, dFz4)*(1); st= st+1;fwaitbar(st/steps,h);
+handles.divF4 = divergence(y,x,z, dFx4, dFy4, dFz4)*(1); st= st+1;fwaitbar(st/steps,h);
 handles.colRange = [min(handles.divF2(:)/1.5),max(handles.divF2(:)/1.5)];  try close(h); catch; end;
 
 % arrow length
@@ -2510,3 +2517,68 @@ catch
     errordlg('This is not a result mat-file from RegGUI');
     return;
 end
+
+
+% --- Executes on key press with focus on EvalGUI and none of its controls.
+function EvalGUI_KeyPressFcn(hObject, eventdata, handles)
+% Bail if only a modifier has been pressed
+switch eventdata.Key
+    case {'shift', 'control', 'alt'}, return
+end
+% -----------------------------------------------------------------
+
+% -----------------------------------------------------------------
+% Get the modifier (shift, cntl, alt) keys and determine whether
+% the control key was pressed
+csModifier = eventdata.Modifier;
+sModifier = '';
+for i = 1:length(csModifier)
+    if strcmp(csModifier{i}, 'shift'  ), sModifier = 'Shift'; end
+    if strcmp(csModifier{i}, 'control'), sModifier = 'Cntl'; end
+    if strcmp(csModifier{i}, 'alt'    ), sModifier = 'Alt'; end
+end
+        
+iStep = 1;
+switch eventdata.Key
+    case {'numpad1', 'leftarrow'} % Image up
+        if(strcmp(sModifier,'Cntl'))
+            handles.colWidth  = handles.colRange(2)-handles.colRange(1);
+            handles.colWidth  = handles.colWidth.*exp(iStep*0.1);
+            handles.colCenter = (handles.colRange(2)+handles.colRange(1))/2;
+            
+            handles = fChangeBrightnessContrast(handles);
+        else
+            handles = fChangeSlice(handles, -1);
+        end
+
+    case {'numpad2', 'rightarrow'} % Image down
+        if(strcmp(sModifier,'Cntl'))
+            handles.colWidth  = handles.colRange(2)-handles.colRange(1);
+            handles.colWidth  = handles.colWidth.*exp(-iStep*0.1);
+            handles.colCenter = (handles.colRange(2)+handles.colRange(1))/2;
+            
+            handles = fChangeBrightnessContrast(handles);
+        else
+            handles = fChangeSlice(handles, 1);
+        end
+        
+    case 'uparrow'
+        if(strcmp(sModifier,'Cntl'))
+            handles.colWidth  = handles.colRange(2)-handles.colRange(1);
+            handles.colCenter = (handles.colRange(2)+handles.colRange(1))/2;
+            handles.colCenter = handles.colCenter.*exp(iStep*0.1);
+            
+            handles = fChangeBrightnessContrast(handles);
+        end
+        
+    case 'downarrow'
+        if(strcmp(sModifier,'Cntl'))
+            handles.colWidth  = handles.colRange(2)-handles.colRange(1);
+            handles.colCenter = (handles.colRange(2)+handles.colRange(1))/2;
+            handles.colCenter = handles.colCenter.*exp(-iStep*0.1);
+            
+            handles = fChangeBrightnessContrast(handles);
+        end
+        
+end
+guidata(hObject, handles);

@@ -12,7 +12,21 @@ function [ SOptions, dDeformRes ] = fReadLAPParam( sParamFile )
 % (c) 2015: Thomas Kuestner
 % -------------------------------------------------------------------------
 
-cParam = table2cell(readtable(sParamFile,'Delimiter','='));
+try
+    cParam = table2cell(readtable(sParamFile,'Delimiter','='));
+catch
+    fid = fopen(sParamFile,'r');
+    tline = fgetl(fid);
+    cParam = strsplit(tline,'=');
+    while ischar(tline)
+        tline = fgetl(fid);
+        if(ischar(tline))
+            cParam(end+1,:) = strsplit(tline,'=');
+        end
+    end
+    fclose(fid);
+    cParam = cParam(2:end,:);
+end
 for i=1:size(cParam,1)
     cVar = strtok(cParam{i,2}, '%');
     if(strcmp(cVar(1),'''')) % string 

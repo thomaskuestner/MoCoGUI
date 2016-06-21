@@ -12,7 +12,21 @@ function [ SOptions, dDeformRes ] = fReadDemonsParam( sParamFile )
 % (c) 2014: Thomas Kuestner
 % -------------------------------------------------------------------------
 
-cParam = table2cell(readtable(sParamFile,'Delimiter','='));
+try
+    cParam = table2cell(readtable(sParamFile,'Delimiter','='));
+catch
+    fid = fopen(sParamFile,'r');
+    tline = fgetl(fid);
+    cParam = strsplit(tline,'=');
+    while ischar(tline)
+        tline = fgetl(fid);
+        if(ischar(tline))
+            cParam(end+1,:) = strsplit(tline,'=');
+        end
+    end
+    fclose(fid);
+    cParam = cParam(2:end,:);
+end
 for i=1:size(cParam,1)
     if(strcmp(cParam{i,2}(1),'''')) % string 
         eval(sprintf('%s = %s;',cParam{i,1},cParam{i,2}));

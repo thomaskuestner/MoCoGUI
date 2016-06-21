@@ -81,7 +81,7 @@ end
     
 for iJ=1:iN3D
     if(iDim == 1) % 2D
-        SImg.data = dImgFix(:,:,1,iJ);
+        SImg.data = dImgFix(:,:,iJ,1);
         cImgFix{iJ} = sprintf('imgFix%02u.mhd',iJ);
         write_mhd(cImgFix{iJ}, SImg, 'ElementType', sPrecWrite);
     else % 3D

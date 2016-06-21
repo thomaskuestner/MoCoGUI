@@ -105,23 +105,23 @@ try % Try to apply a nice icon
 catch
     warning('Could not apply a nice icon to the figure :(');
 end
-dImage = double(imread(['icons',filesep,'save.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'save.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_save, 'CData', dImage/max(dImage(:)));
 
-dImage = double(imread(['icons',filesep,'open.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'open.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_load, 'CData', dImage/max(dImage(:)));
 
-dImage = double(imread(['icons',filesep,'reset.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'reset.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_reset_contrast, 'CData', dImage/max(dImage(:)));
 
-dImage = double(imread(['icons',filesep,'cogs.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'cogs.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pbSettingsMetrics, 'CData', dImage/max(dImage(:)));
 
-x = double(imread(['icons',filesep,'papierkorb.jpg']))./255;
+x = double(imread([currpath,filesep,'icons',filesep,'papierkorb.jpg']))./255;
 I2 = imresize(x, [16 16]);
 set(handles.pb_deleteNo, 'CData', I2/max(I2(:)));
 

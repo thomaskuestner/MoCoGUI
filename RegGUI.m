@@ -115,39 +115,39 @@ axes(handles.axArrowRight2);
 imshow(dIcon);
 
 % ok button
-dImage = double(imread(['icons',filesep,'checkmark.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'checkmark.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.buttonOK, 'CData', dImage/max(dImage(:)));
 set(handles.buttonOK, 'Visible','off');
 
 % cancel button
-dImage = double(imread(['icons',filesep,'cancel.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'cancel.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.buttonCancel, 'CData', dImage/max(dImage(:)));
 set(handles.buttonCancel, 'Visible','off');
 
 % images button 4D
-dImage = double(imread(['icons',filesep,'folder_plus.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'folder_plus.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.button4D, 'CData', dImage/max(dImage(:)));
 
 % images button workspace
-dImage = double(imread(['icons',filesep,'doc_plus.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'doc_plus.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.buttonWorkspace, 'CData', dImage/max(dImage(:)));
 
 % load registration button
-dImage = double(imread(['icons',filesep,'open.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'open.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_LoadReg, 'CData', dImage/max(dImage(:)));
 
 % clear images button
-dImage = double(imread(['icons',filesep,'round_delete.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'round_delete.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.clearFigures, 'CData', dImage/max(dImage(:)));
 
 % edit parameter file button
-dImage = double(imread(['icons',filesep,'edit.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'edit.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_editParam, 'CData', dImage/max(dImage(:)));
 
@@ -1189,13 +1189,13 @@ function listRegs_KeyPressFcn(hObject, eventdata, handles)
 if(strcmp(eventdata.Key,'delete'))
     iInds = get(handles.listRegs,'Value');
     if(~isempty(handles.allReg))
-        lInd = false(size(handles.allReg,1),1);
-        lInd(iInds) = true;
-        handles.allReg = handles.allReg(~lInd);
+        for iI=1:length(iInds)
+            handles.allReg(iInds(iI),:) = [];
+        end
         if(any(ismember(handles.iIndGlobal, -iInds)))
             handles = fClearAllAxes(handles);
         end
-        iNextVal = min([max(iInds(:)) + 1, max([length(handles.allReg), 1])]);
+        iNextVal = min([max(iInds(:)) + 1, max([size(handles.allReg,1), 1])]);
         if(~isempty(handles.allReg)) % single element deleted
             cList = cellfun(@(x) x.sShow, handles.allReg(:,2),'UniformOutput',false);
         else

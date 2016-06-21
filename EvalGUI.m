@@ -127,19 +127,19 @@ try % Try to apply a nice icon
 catch
     warning('Could not apply a nice icon to the figure :(');
 end
-dImage = double(imread(['icons',filesep,'layers.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'layers.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_DispGates, 'CData', dImage/max(dImage(:)));
 
-dImage = double(imread(['icons',filesep,'reset.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'reset.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_resetContrast, 'CData', dImage/max(dImage(:)));
 
-dImage = double(imread(['icons',filesep,'save.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'save.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_save, 'CData', dImage/max(dImage(:)));
 
-dImage = double(imread(['icons',filesep,'doc_export.png']))./255;
+dImage = double(imread([currpath,filesep,'icons',filesep,'doc_export.png']))./255;
 if size(dImage, 3) == 1, dImage = repmat(dImage, [1 1 3]); end
 set(handles.pb_SaveAs, 'CData', dImage/max(dImage(:)));
 
@@ -180,7 +180,7 @@ handles.iActualGates = size(handles.h.dImg,4);
 if(handles.iActualGates < 4) % if input has less than four gates
     % pad with zeros
     handles.h.dImg = cat(4,handles.h.dImg,zeros(size(handles.h.dImg,1),size(handles.h.dImg,2),size(handles.h.dImg,3),4-size(handles.h.dImg,4)));
-    handles.h.dImgReg = cat(4,handles.h.dImg,zeros(size(handles.h.dImg,1),size(handles.h.dImg,2),size(handles.h.dImg,3),4-size(handles.h.dImg,4)));
+    handles.h.dImgReg = cat(4,handles.h.dImgReg,zeros(size(handles.h.dImgReg,1),size(handles.h.dImgReg,2),size(handles.h.dImgReg,3),4-size(handles.h.dImgReg,4)));
     for iI=handles.iActualGates+1:4
         handles.h.SDeform(iI).dBx = zeros(size(handles.h.SDeform(2).dBx));
         handles.h.SDeform(iI).dBy = zeros(size(handles.h.SDeform(2).dBy));

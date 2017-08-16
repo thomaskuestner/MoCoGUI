@@ -57,7 +57,7 @@ dImgMove = uint16(dMove./max(dMove(:)).*(2.^16 - 1));
     
 for iJ=1:iN3D
     if(iDim == 1) % 2D reg
-        iImg = dImgFix(:,:,iJ);
+        iImg = dImgFix(:,:,iJ,1);
         cImgFix{iJ} = sprintf('imgFix%02u.gipl',iJ);
         giplwrite([sResultPath,filesep,cImgFix{iJ}],iImg,'short_noscale');
     else % 3D

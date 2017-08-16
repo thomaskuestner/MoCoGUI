@@ -110,17 +110,17 @@ for iJ = 1:iN3D
             end
             
             if dDeformRes ~= 0
-                SDeform(iI).dFy(:,:,iJ) = uLAP{1}.*dDeformRes;
-                SDeform(iI).dFx(:,:,iJ) = uLAP{2}.*dDeformRes;
+                SDeform(iI).dFy(:,:,iJ) = real(uLAP).*dDeformRes;
+                SDeform(iI).dFx(:,:,iJ) = imag(uLAP).*dDeformRes;
                 
-                SDeform(iI).dBy(:,:,iJ) = -uLAP{1}.*dDeformRes;
-                SDeform(iI).dBx(:,:,iJ) = -uLAP{2}.*dDeformRes;
+                SDeform(iI).dBy(:,:,iJ) = -real(uLAP).*dDeformRes;
+                SDeform(iI).dBx(:,:,iJ) = -imag(uLAP).*dDeformRes;
             else
-                SDeform(iI).dFy(:,:,iJ) = uLAP{1};
-                SDeform(iI).dFx(:,:,iJ) = uLAP{2};
+                SDeform(iI).dFy(:,:,iJ) = real(uLAP);
+                SDeform(iI).dFx(:,:,iJ) = imag(uLAP);
                 
-                SDeform(iI).dBy(:,:,iJ) = -uLAP{1};
-                SDeform(iI).dBx(:,:,iJ) = -uLAP{2};
+                SDeform(iI).dBy(:,:,iJ) = -real(uLAP);
+                SDeform(iI).dBx(:,:,iJ) = -imag(uLAP);
             end
             
         else % 3D reg => just 3D image

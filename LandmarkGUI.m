@@ -1370,7 +1370,11 @@ switch selection,
         if(isfield(handles,'SPaths'))
             SPaths = handles.SPaths;
             standardVoxelsize = [1 1 1];
-            save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize','-append');
+            if(exist([currpath, filesep, 'GUIPreferences.mat'],'file'))
+                save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize', 'lEvalMetrics', '-append');
+            else
+                save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize', 'lEvalMetrics');
+            end
         end
         delete(gcf)
     case 'No'

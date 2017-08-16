@@ -245,7 +245,11 @@ currpath = fileparts(mfilename('fullpath'));
 if(isfield(handles,'SPaths'))
     SPaths = handles.SPaths;
     standardVoxelsize = [1 1 1];
-    save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize','-append');
+    if(exist([currpath, filesep, 'GUIPreferences.mat'],'file'))
+        save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize', '-append');
+    else
+        save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize');
+    end
 end
 delete(hObject);
 catch 
@@ -321,7 +325,11 @@ if strcmp(sSelectionType, 'normal')
             errordlg('no mixed file extension loading allowed!');
             return;
         end 
-    csFilenames{1} = sFilename;
+    if(iscell(sFilename))
+        csFilenames = sFilename;
+    else
+        csFilenames{1} = sFilename;
+    end
 else
     sPath = uigetdir(handles.SPaths.sData);
     if isnumeric(sPath), return, end;
@@ -1103,7 +1111,7 @@ if(~isempty(handles.allReg))
     set(handles.popupDim,'Value',regInfo.iDim);
     [~,sTmpParafile] = fileparts(regInfo.sParafile);
     set(handles.txtParafile,'String',sTmpParafile);
-    if(handles.allReg{iInd,2}.lDone) % show images and df
+    if(any(cellfun(@(x) x.lDone, handles.allReg(iInd,2)))) % show images and df
         handles = plotImageAndDefField(handles, iInd);
     end
 end % show information nevertheless
@@ -1189,9 +1197,9 @@ function listRegs_KeyPressFcn(hObject, eventdata, handles)
 if(strcmp(eventdata.Key,'delete'))
     iInds = get(handles.listRegs,'Value');
     if(~isempty(handles.allReg))
-        for iI=1:length(iInds)
-            handles.allReg(iInds(iI),:) = [];
-        end
+%         for iI=1:length(iInds)
+            handles.allReg(iInds,:) = [];
+%         end
         if(any(ismember(handles.iIndGlobal, -iInds)))
             handles = fClearAllAxes(handles);
         end
@@ -1449,36 +1457,36 @@ set(handles.buttonCancel,'Visible','off');
 guidata(hObject,handles);
 
 
-function handles = plotImageAndDefField(handles, iReg)
+function handles = plotImageAndDefField(handles, iRegIn)
 % plot images and deformation field of performed registration
-
-% check if solutions available for current regi
-if(~handles.allReg{iReg,2}.lDone)
-    return;
-end
-% clear all first
-handles = fClearAllAxes(handles);    
-for iJ=1:4 % show images on axis    
-    if(iJ > length(handles.allReg{iReg,1}))
-        continue;
+for iReg=iRegIn
+    % check if solutions available for current regi
+    if(~handles.allReg{iReg,2}.lDone)
+        return;
     end
-	iOpen = find(handles.lOpen,1,'first');
-	handles.lOpen(iOpen) = false;
-    handles.iIndGlobal(iJ) = -iReg;
-	dImg = scaleImg(handles.allReg{iReg,1}{iJ}.dImg,[0 1]);
-	handles.slice(:,iOpen) = [round(size(dImg,3)/2); size(dImg,3)];
-	eval(sprintf('set(handles.hI%d, ''CData'', dImg(:,:,round(size(dImg,3)/2)));',iOpen));
-    if(isfield(handles.allReg{iReg,3},'SDeform') && ~isempty(handles.allReg{iReg,3}.SDeform(iJ).dFx))
-        dFx = handles.allReg{iReg,3}.SDeform(iJ).dFx;
-        dFy = handles.allReg{iReg,3}.SDeform(iJ).dFy;
-        iX = 1:handles.quiverFac:size(dFx, 2);
-        iY = 1:handles.quiverFac:size(dFy, 1);
-        eval(sprintf('set(handles.hQ%d, ''XData'', iX, ''YData'', iY, ''UData'', dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, handles.slice(1,iJ)), ''VData'', dFy(1:handles.quiverFac:end, 1:handles.quiverFac:end, handles.slice(1,iJ)), ''Color'', ''y'', ''Visible'', ''on'');',iJ));
-    end    
-	eval(sprintf('set(handles.sliceNo%d, ''String'', ''%02d/%02d'');', iOpen, handles.slice(1,iOpen), handles.slice(2,iOpen)));
-	eval(sprintf('set(handles.showName%d, ''String'', ''%s - %02d'');', iOpen, handles.allReg{iReg,1}{iJ}.sShowname, handles.allReg{iReg,1}{iJ}.i4D));
+    % clear all first
+    handles = fClearAllAxes(handles);    
+    for iJ=1:4 % show images on axis    
+        if(iJ > length(handles.allReg{iReg,1}))
+            continue;
+        end
+        iOpen = find(handles.lOpen,1,'first');
+        handles.lOpen(iOpen) = false;
+        handles.iIndGlobal(iJ) = -iReg;
+        dImg = scaleImg(handles.allReg{iReg,1}{iJ}.dImg,[0 1]);
+        handles.slice(:,iOpen) = [round(size(dImg,3)/2); size(dImg,3)];
+        eval(sprintf('set(handles.hI%d, ''CData'', dImg(:,:,round(size(dImg,3)/2)));',iOpen));
+        if(isfield(handles.allReg{iReg,3},'SDeform') && ~isempty(handles.allReg{iReg,3}.SDeform(iJ).dFx))
+            dFx = handles.allReg{iReg,3}.SDeform(iJ).dFx;
+            dFy = handles.allReg{iReg,3}.SDeform(iJ).dFy;
+            iX = 1:handles.quiverFac:size(dFx, 2);
+            iY = 1:handles.quiverFac:size(dFy, 1);
+            eval(sprintf('set(handles.hQ%d, ''XData'', iX, ''YData'', iY, ''UData'', dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, handles.slice(1,iJ)), ''VData'', dFy(1:handles.quiverFac:end, 1:handles.quiverFac:end, handles.slice(1,iJ)), ''Color'', ''y'', ''Visible'', ''on'');',iJ));
+        end    
+        eval(sprintf('set(handles.sliceNo%d, ''String'', ''%02d/%02d'');', iOpen, handles.slice(1,iOpen), handles.slice(2,iOpen)));
+        eval(sprintf('set(handles.showName%d, ''String'', ''%s - %02d'');', iOpen, handles.allReg{iReg,1}{iJ}.sShowname, handles.allReg{iReg,1}{iJ}.i4D));
+    end
 end
-
 
 function handles = fClearAllAxes(handles)
 % clear all axes

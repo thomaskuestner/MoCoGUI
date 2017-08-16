@@ -195,7 +195,7 @@ end
 
 %% Choose default command line output for EvalGUI
 handles.output = hObject;
-handles.slice = floor(size(handles.h.dImg,3)/2);         % slice number
+handles.slice = max([1,floor(size(handles.h.dImg,3)/2)]);         % slice number
 handles.quiverScale = 1;
 handles.quiverFactor = 8;
 handles.dStep = [0.25, 1]; % quiverScale, quiverFactor
@@ -297,7 +297,11 @@ if(isfield(handles,'SPaths'))
     SPaths = handles.SPaths;
     standardVoxelsize = [1 1 1];
     lEvalMetrics = handles.lEvalMetrics;
-    save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize', 'lEvalMetrics', '-append');
+    if(exist([currpath, filesep, 'GUIPreferences.mat'],'file'))
+        save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize', 'lEvalMetrics', '-append');
+    else
+        save([currpath, filesep, 'GUIPreferences.mat'],'SPaths','standardVoxelsize', 'lEvalMetrics');
+    end
 end
 delete(hObject);
 catch
@@ -2100,46 +2104,86 @@ else % backward
 end
 dVoxSize = handles.h.SGeo.cVoxelsize(handles.iShown);
 
+if(size(dFx2,3) > 1)
+    iNDim=3; % 3D
+else
+    iNDim=2; % 2D
+end
+
 % determinant of 'jacobian' (numeric derivative: diff)
 h = fwaitbar(0,'Preparing deformation fields. Please wait...'); st = 0; steps = 6;
-[Fx2x, Fx2y, Fx2z] = gradient(dFx2,dVoxSize{2}(1),dVoxSize{2}(2),dVoxSize{2}(3));
-[Fy2x, Fy2y, Fy2z] = gradient(dFy2,dVoxSize{2}(1),dVoxSize{2}(2),dVoxSize{2}(3));
-[Fz2x, Fz2y, Fz2z] = gradient(dFz2,dVoxSize{2}(1),dVoxSize{2}(2),dVoxSize{2}(3));
-handles.detJ2 = (Fx2x+1).*(Fy2y+1).*(Fz2z+1) + Fx2y.*Fy2z.*Fz2x + Fx2z.*Fz2y.*Fy2x ...
-    - Fx2y.*Fy2x.*(Fz2z+1) - Fx2z.*Fz2x.*(Fy2y+1) - Fy2z.*Fz2y.*(Fx2x+1);
+if(iNDim==3) % 3D
+    [Fx2x, Fx2y, Fx2z] = gradient(dFx2,dVoxSize{2}(1),dVoxSize{2}(2),dVoxSize{2}(3));
+    [Fy2x, Fy2y, Fy2z] = gradient(dFy2,dVoxSize{2}(1),dVoxSize{2}(2),dVoxSize{2}(3));
+    [Fz2x, Fz2y, Fz2z] = gradient(dFz2,dVoxSize{2}(1),dVoxSize{2}(2),dVoxSize{2}(3));
+    handles.detJ2 = (Fx2x+1).*(Fy2y+1).*(Fz2z+1) + Fx2y.*Fy2z.*Fz2x + Fx2z.*Fz2y.*Fy2x ...
+        - Fx2y.*Fy2x.*(Fz2z+1) - Fx2z.*Fz2x.*(Fy2y+1) - Fy2z.*Fz2y.*(Fx2x+1);
+else
+    [Fx2x, Fx2y] = gradient(dFx2,dVoxSize{2}(1),dVoxSize{2}(2));
+    [Fy2x, Fy2y] = gradient(dFy2,dVoxSize{2}(1),dVoxSize{2}(2));
+    [Fz2x, Fz2y] = gradient(dFz2,dVoxSize{2}(1),dVoxSize{2}(2));
+    handles.detJ2 = (Fx2x+1).*(Fy2y+1) + Fx2y.*Fz2x + Fz2y.*Fy2x ...
+        - Fx2y.*Fy2x - Fz2x.*(Fy2y+1);
+end
 st= st+1;fwaitbar(st/steps,h);
 
-[Fx3x, Fx3y, Fx3z] = gradient(dFx3,dVoxSize{3}(1),dVoxSize{3}(2),dVoxSize{3}(3));
-[Fy3x, Fy3y, Fy3z] = gradient(dFy3,dVoxSize{3}(1),dVoxSize{3}(2),dVoxSize{3}(3));
-[Fz3x, Fz3y, Fz3z] = gradient(dFz3,dVoxSize{3}(1),dVoxSize{3}(2),dVoxSize{3}(3));
-handles.detJ3 = (Fx3x+1).*(Fy3y+1).*(Fz3z+1) + Fx3y.*Fy3z.*Fz3x + Fx3z.*Fz3y.*Fy3x ...
-    - Fx3y.*Fy3x.*(Fz3z+1) - Fx3z.*Fz3x.*(Fy3y+1) - Fy3z.*Fz3y.*(Fx3x+1);
- 
+if(iNDim==3) % 3D
+    [Fx3x, Fx3y, Fx3z] = gradient(dFx3,dVoxSize{3}(1),dVoxSize{3}(2),dVoxSize{3}(3));
+    [Fy3x, Fy3y, Fy3z] = gradient(dFy3,dVoxSize{3}(1),dVoxSize{3}(2),dVoxSize{3}(3));
+    [Fz3x, Fz3y, Fz3z] = gradient(dFz3,dVoxSize{3}(1),dVoxSize{3}(2),dVoxSize{3}(3));
+    handles.detJ3 = (Fx3x+1).*(Fy3y+1).*(Fz3z+1) + Fx3y.*Fy3z.*Fz3x + Fx3z.*Fz3y.*Fy3x ...
+        - Fx3y.*Fy3x.*(Fz3z+1) - Fx3z.*Fz3x.*(Fy3y+1) - Fy3z.*Fz3y.*(Fx3x+1);
+else
+    [Fx3x, Fx3y] = gradient(dFx3,dVoxSize{3}(1),dVoxSize{3}(2));
+    [Fy3x, Fy3y] = gradient(dFy3,dVoxSize{3}(1),dVoxSize{3}(2));
+    [Fz3x, Fz3y] = gradient(dFz3,dVoxSize{3}(1),dVoxSize{3}(2));
+    handles.detJ3 = (Fx3x+1).*(Fy3y+1) + Fx3y.*Fz3x + Fz3y.*Fy3x ...
+        - Fx3y.*Fy3x - Fz3x.*(Fy3y+1) - Fz3y.*(Fx3x+1);
+end
 st= st+1;fwaitbar(st/steps,h);
 
-[Fx4x, Fx4y, Fx4z] = gradient(dFx4,dVoxSize{4}(1),dVoxSize{4}(2),dVoxSize{4}(3));
-[Fy4x, Fy4y, Fy4z] = gradient(dFy4,dVoxSize{4}(1),dVoxSize{4}(2),dVoxSize{4}(3));
-[Fz4x, Fz4y, Fz4z] = gradient(dFz4,dVoxSize{4}(1),dVoxSize{4}(2),dVoxSize{4}(3));
-handles.detJ4 = (Fx4x+1).*(Fy4y+1).*(Fz4z+1) + Fx4y.*Fy4z.*Fz4x + Fx4z.*Fz4y.*Fy4x ...
-    - Fx4y.*Fy4x.*(Fz4z+1) - Fx4z.*Fz4x.*(Fy4y+1) - Fy4z.*Fz4y.*(Fx4x+1);
-
+if(iNDim==3) % 3D
+    [Fx4x, Fx4y, Fx4z] = gradient(dFx4,dVoxSize{4}(1),dVoxSize{4}(2),dVoxSize{4}(3));
+    [Fy4x, Fy4y, Fy4z] = gradient(dFy4,dVoxSize{4}(1),dVoxSize{4}(2),dVoxSize{4}(3));
+    [Fz4x, Fz4y, Fz4z] = gradient(dFz4,dVoxSize{4}(1),dVoxSize{4}(2),dVoxSize{4}(3));
+    handles.detJ4 = (Fx4x+1).*(Fy4y+1).*(Fz4z+1) + Fx4y.*Fy4z.*Fz4x + Fx4z.*Fz4y.*Fy4x ...
+        - Fx4y.*Fy4x.*(Fz4z+1) - Fx4z.*Fz4x.*(Fy4y+1) - Fy4z.*Fz4y.*(Fx4x+1);
+else
+    [Fx4x, Fx4y] = gradient(dFx4,dVoxSize{4}(1),dVoxSize{4}(2));
+    [Fy4x, Fy4y] = gradient(dFy4,dVoxSize{4}(1),dVoxSize{4}(2));
+    [Fz4x, Fz4y] = gradient(dFz4,dVoxSize{4}(1),dVoxSize{4}(2));
+    handles.detJ4 = (Fx4x+1).*(Fy4y+1) + Fx4y.*Fz4x + Fz4y.*Fy4x ...
+        - Fx4y.*Fy4x - Fz4x.*(Fy4y+1) - Fz4y.*(Fx4x+1);
+end
 st= st+1;fwaitbar(st/steps,h);
 
 handles.colRange = [min(handles.detJ2(:)/1), max(handles.detJ2(:)/1)];
 
 % divergence
-x = 1:dVoxSize{2}(1):dVoxSize{2}(1)*size(dFx2,1);
-y = 1:dVoxSize{2}(2):dVoxSize{2}(2)*size(dFx2,2);
-z = 1:dVoxSize{2}(3):dVoxSize{2}(3)*size(dFx2,3);
-handles.divF2 = divergence(y,x,z, dFx2, dFy2, dFz2)*(1); st= st+1;fwaitbar(st/steps,h);
-x = 1:dVoxSize{3}(1):dVoxSize{3}(1)*size(dFx3,1);
-y = 1:dVoxSize{3}(2):dVoxSize{3}(2)*size(dFx3,2);
-z = 1:dVoxSize{3}(3):dVoxSize{3}(3)*size(dFx3,3);
-handles.divF3 = divergence(y,x,z, dFx3, dFy3, dFz3)*(1); st= st+1;fwaitbar(st/steps,h);
-x = 1:dVoxSize{4}(1):dVoxSize{4}(1)*size(dFx4,1);
-y = 1:dVoxSize{4}(2):dVoxSize{4}(2)*size(dFx4,2);
-z = 1:dVoxSize{4}(3):dVoxSize{4}(3)*size(dFx4,3);
-handles.divF4 = divergence(y,x,z, dFx4, dFy4, dFz4)*(1); st= st+1;fwaitbar(st/steps,h);
+if(iNDim==3) % 3D
+    x = 1:dVoxSize{2}(1):dVoxSize{2}(1)*size(dFx2,1);
+    y = 1:dVoxSize{2}(2):dVoxSize{2}(2)*size(dFx2,2);
+    z = 1:dVoxSize{2}(3):dVoxSize{2}(3)*size(dFx2,3);
+    handles.divF2 = divergence(y,x,z, dFx2, dFy2, dFz2)*(1); st= st+1;fwaitbar(st/steps,h);
+    x = 1:dVoxSize{3}(1):dVoxSize{3}(1)*size(dFx3,1);
+    y = 1:dVoxSize{3}(2):dVoxSize{3}(2)*size(dFx3,2);
+    z = 1:dVoxSize{3}(3):dVoxSize{3}(3)*size(dFx3,3);
+    handles.divF3 = divergence(y,x,z, dFx3, dFy3, dFz3)*(1); st= st+1;fwaitbar(st/steps,h);
+    x = 1:dVoxSize{4}(1):dVoxSize{4}(1)*size(dFx4,1);
+    y = 1:dVoxSize{4}(2):dVoxSize{4}(2)*size(dFx4,2);
+    z = 1:dVoxSize{4}(3):dVoxSize{4}(3)*size(dFx4,3);
+    handles.divF4 = divergence(y,x,z, dFx4, dFy4, dFz4)*(1); st= st+1;fwaitbar(st/steps,h);
+else
+    x = 1:dVoxSize{2}(1):dVoxSize{2}(1)*size(dFx2,1);
+    y = 1:dVoxSize{2}(2):dVoxSize{2}(2)*size(dFx2,2);
+    handles.divF2 = divergence(y,x,dFx2, dFy2)*(1); st= st+1;fwaitbar(st/steps,h);
+    x = 1:dVoxSize{3}(1):dVoxSize{3}(1)*size(dFx3,1);
+    y = 1:dVoxSize{3}(2):dVoxSize{3}(2)*size(dFx3,2);
+    handles.divF3 = divergence(y,x, dFx3, dFy3)*(1); st= st+1;fwaitbar(st/steps,h);
+    x = 1:dVoxSize{4}(1):dVoxSize{4}(1)*size(dFx4,1);
+    y = 1:dVoxSize{4}(2):dVoxSize{4}(2)*size(dFx4,2);
+    handles.divF4 = divergence(y,x, dFx4, dFy4)*(1); st= st+1;fwaitbar(st/steps,h);
+end
 handles.colRange = [min(handles.divF2(:)/1.5),max(handles.divF2(:)/1.5)];  try close(h); catch; end;
 
 % arrow length

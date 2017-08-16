@@ -92,7 +92,7 @@ for iJ = 1:iN3D
     for iI = 2:iNGates
         fprintf(1, 'Registering gate %u...', iI);
         
-        if(~exist('SDeform','var') || ~isfield(SDeform(iI),'dFy'))
+        if(~exist('SDeform','var') || length(SDeform) < iI || ~isfield(SDeform(iI),'dFy'))
             SDeform(iI).dFy = zeros(size(dImgReg,1),size(dImgReg,2),size(dImgReg,3));
             SDeform(iI).dFx = zeros(size(dImgReg,1),size(dImgReg,2),size(dImgReg,3));
             SDeform(iI).dFz = zeros(size(dImgReg,1),size(dImgReg,2),size(dImgReg,3));

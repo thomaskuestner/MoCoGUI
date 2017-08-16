@@ -24,6 +24,7 @@ h = fwaitbar(0,'Running Registration. Please wait!'); st=0;
 
 %% prepare images
 [SOptions, dDeformRes] = fReadDemonsParam(sParafile);
+nDimImg = ndims(dFix);
 
 if dDeformRes ~= 0
     % interpolate to isotropic resolution
@@ -35,25 +36,39 @@ if dDeformRes ~= 0
     % The interpolation coordinate system
     dXi = SGeo.dMRCoord1(1,1,1):sign(SGeo.dMRCoord1(2,1,1)-SGeo.dMRCoord1(1,1,1))*dDeformRes:SGeo.dMRCoord1(end,1,1);
     dYi = SGeo.dMRCoord2(1,1,1):sign(SGeo.dMRCoord2(1,2,1)-SGeo.dMRCoord2(1,1,1))*dDeformRes:SGeo.dMRCoord2(1,end,1);
-    dZi = SGeo.dMRCoord3(1,1,1):sign(SGeo.dMRCoord3(1,1,2)-SGeo.dMRCoord3(1,1,1))*dDeformRes:SGeo.dMRCoord3(1,1,end);
-    [dXIso, dYIso, dZIso] = ndgrid(dXi, dYi, dZi);
-    dImgIsoTmp = zeros(size(dXIso, 1), size(dXIso, 2), size(dXIso, 3), size(dMove, 4));
-    % The Interpolation
-    fprintf('\nInterpolating MR Images to deformation %1.2f mm isotropic resolution.', dDeformRes);
-    dFix = interpn(SGeo.dMRCoord1, SGeo.dMRCoord2, SGeo.dMRCoord3, dFix, dXIso, dYIso, dZIso, '*linear');    
-    for iI = 1:size(dMove, 4)
-        dImgIsoTmp(:,:,:,iI) = interpn(SGeo.dMRCoord1, SGeo.dMRCoord2, SGeo.dMRCoord3, dMove(:,:,:,iI), dXIso, dYIso, dZIso, '*linear');
-        fprintf(1, '.');
+    if(nDimImg == 2)
+%         dZi = 0;
+        [dXIso, dYIso] = ndgrid(dXi, dYi);
+        dImgIsoTmp = zeros(size(dXIso, 1), size(dXIso, 2), 1, size(dMove, 4));
+        % The Interpolation
+        fprintf('\nInterpolating MR Images to deformation %1.2f mm isotropic resolution.', dDeformRes);
+        dFix = interpn(SGeo.dMRCoord1, SGeo.dMRCoord2, dFix, dXIso, dYIso, '*linear');    
+        for iI = 1:size(dMove, 4)
+            dImgIsoTmp(:,:,:,iI) = interpn(SGeo.dMRCoord1, SGeo.dMRCoord2, dMove(:,:,:,iI), dXIso, dYIso, '*linear');
+            fprintf(1, '.');
+        end
+        fprintf('\n');
+        dMove = dImgIsoTmp;
+    else %3D
+        dZi = SGeo.dMRCoord3(1,1,1):sign(SGeo.dMRCoord3(1,1,2)-SGeo.dMRCoord3(1,1,1))*dDeformRes:SGeo.dMRCoord3(1,1,end);    
+        [dXIso, dYIso, dZIso] = ndgrid(dXi, dYi, dZi);
+        dImgIsoTmp = zeros(size(dXIso, 1), size(dXIso, 2), size(dXIso, 3), size(dMove, 4));
+        % The Interpolation
+        fprintf('\nInterpolating MR Images to deformation %1.2f mm isotropic resolution.', dDeformRes);
+        dFix = interpn(SGeo.dMRCoord1, SGeo.dMRCoord2, SGeo.dMRCoord3, dFix, dXIso, dYIso, dZIso, '*linear');    
+        for iI = 1:size(dMove, 4)
+            dImgIsoTmp(:,:,:,iI) = interpn(SGeo.dMRCoord1, SGeo.dMRCoord2, SGeo.dMRCoord3, dMove(:,:,:,iI), dXIso, dYIso, dZIso, '*linear');
+            fprintf(1, '.');
+        end
+        fprintf('\n');
+        dMove = dImgIsoTmp;
     end
-    fprintf('\n');
-    dMove = dImgIsoTmp;
     clear 'dImgIsoTmp';
     cVoxelInterp = mat2cell(repmat(dDeformRes,size(dMove,4)+1,3),ones(1,size(dMove,4)+1),3);
 else
     cVoxelInterp = SGeo.cVoxelsize;
 end
 
-nDimImg = ndims(dFix);
 if(nDimImg == 2)
     iNGates = size(dMove, 3) + 1;
     iN3D = 1;
@@ -77,7 +92,7 @@ for iJ = 1:iN3D
     for iI = 2:iNGates
         fprintf(1, 'Registering gate %u...', iI);
         
-        if(~isfield(SDeform(iI),'dFy'))
+        if(~exist('SDeform','var') || ~isfield(SDeform(iI),'dFy'))
             SDeform(iI).dFy = zeros(size(dImgReg,1),size(dImgReg,2),size(dImgReg,3));
             SDeform(iI).dFx = zeros(size(dImgReg,1),size(dImgReg,2),size(dImgReg,3));
             SDeform(iI).dFz = zeros(size(dImgReg,1),size(dImgReg,2),size(dImgReg,3));
@@ -110,7 +125,7 @@ for iJ = 1:iN3D
                 SDeform(iI).dBx(:,:,iJ) = dBy;
             end
         
-        elseif(iDim == 3) % 3D reg => just 3D image
+        elseif(iDim == 2) % 3D reg => just 3D image
             dImgReg(:,:,:,1) = dFix;
             [dImgReg(:,:,:,iI), dBx, dBy, dBz, dFx, dFy, dFz] = register_volumes(dMove(:,:,:,iI-1), dFix, SOptions);
                         

@@ -1,0 +1,8 @@
+# folders
+example
+results
+
+# files
+*.bak
+*.bak2
+GUIPreferences.mat

@@ -6,3 +6,4 @@ results
 *.bak
 *.bak2
 GUIPreferences.mat
+registration/halar/landmarks.coord

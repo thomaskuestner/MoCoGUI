@@ -76,6 +76,23 @@ else
     set(handles.voxel_z,'String',sprintf('%.2f',handles.dVoxelsize(3)));
 end
 
+% parse inputs
+for iI=1:2:length(varargin)
+    switch varargin{iI}
+        case 'maxPlotSize'
+            maxPlotSize = varargin{iI+1};
+    end
+end
+if(~exist('maxPlotSize', 'var'))
+    handles.maxPlotSize = [256 256];
+else
+    if(isscalar(maxPlotSize))
+        handles.maxPlotSize = [maxPlotSize maxPlotSize];
+    else
+        handles.maxPlotSize = maxPlotSize(1:2);
+    end
+end
+
 handles.SPaths = SPaths;
 handles.currpath = currpath;
 handles.sDemoDataPath = [currpath,filesep,'example'];
@@ -154,17 +171,17 @@ set(handles.pb_editParam, 'CData', dImage/max(dImage(:)));
 %% prestore axes
 handles.quiverScale = 1;                % quiver arrows
 handles.quiverFac = 10;
-dFx = zeros(256,256,1);
+dFx = zeros([handles.maxPlotSize,1]);
 iX = 1:handles.quiverFac:size(dFx, 2);
 iY = 1:handles.quiverFac:size(dFx, 1);
 
 axes(handles.Gate01);
 cla;
-handles.hI1 = imshow(zeros(256,256,1),[0 1]);
+handles.hI1 = imshow(zeros([handles.maxPlotSize,1]),[0 1]);
 
 axes(handles.Gate02);
 cla;
-handles.hI2 = imshow(zeros(256,256,1),[0 1]);
+handles.hI2 = imshow(zeros([handles.maxPlotSize,1]),[0 1]);
 hold on;
 handles.hQ2=quiver(iX, iY, dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1),...
     dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1), handles.quiverScale);
@@ -172,7 +189,7 @@ set(handles.hQ2, 'Linewidth', 1.5, 'Color', 'y', 'Visible', 'off');
 
 axes(handles.Gate03);
 cla;
-handles.hI3 = imshow(zeros(256,256,1),[0 1]);
+handles.hI3 = imshow(zeros([handles.maxPlotSize,1]),[0 1]);
 hold on;
 handles.hQ3=quiver(iX, iY, dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1),...
     dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1), handles.quiverScale);
@@ -180,7 +197,7 @@ set(handles.hQ3, 'Linewidth', 1.5, 'Color', 'y', 'Visible', 'off');
 
 axes(handles.Gate04);
 cla;
-handles.hI4 = imshow(zeros(256,256,1),[0 1]);
+handles.hI4 = imshow(zeros([handles.maxPlotSize,1]),[0 1]);
 hold on;
 handles.hQ4=quiver(iX, iY, dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1),...
     dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1), handles.quiverScale);
@@ -406,7 +423,7 @@ switch sExt
         imgInfo.orientation = contents{get(handles.pm_corsagtrans,'value')};
         
         evalin('base',sprintf('if exist(''%s'',''var''); assignin(''caller'',''dImg'',%s); end;',sFile, sFile));
-        imgInfo.size = size(dImg);
+        imgInfo.size = size(dImg); if(length(imgInfo.size) == 2), imgInfo.size(3) = 1; end;
         if(length(imgInfo.size) > 3)
             dSize4D = imgInfo.size(4);
         else
@@ -1490,11 +1507,11 @@ end
 
 function handles = fClearAllAxes(handles)
 % clear all axes
-set(handles.hI1, 'CData', zeros(256,256));
-set(handles.hI2, 'CData', zeros(256,256));
-set(handles.hI3, 'CData', zeros(256,256));
-set(handles.hI4, 'CData', zeros(256,256));
-dFx = zeros(256,256,1);
+set(handles.hI1, 'CData', zeros(handles.maxPlotSize));
+set(handles.hI2, 'CData', zeros(handles.maxPlotSize));
+set(handles.hI3, 'CData', zeros(handles.maxPlotSize));
+set(handles.hI4, 'CData', zeros(handles.maxPlotSize));
+dFx = zeros([handles.maxPlotSize,1]);
 iX = 1:handles.quiverFac:size(dFx, 2);
 iY = 1:handles.quiverFac:size(dFx, 1);
 set(handles.hQ2, 'XData', iX, 'YData', iY, 'UData', dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1), 'VData', dFx(1:handles.quiverFac:end, 1:handles.quiverFac:end, 1), 'Visible', 'off');

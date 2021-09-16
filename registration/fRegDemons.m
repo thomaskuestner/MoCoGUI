@@ -108,7 +108,7 @@ for iJ = 1:iN3D
    
             elseif(nDimImg == 3) % 3D image
                 dImgReg(:,:,iJ,1) = dFix(:,:,iJ);
-                [dImgReg(:,:,iJ,iI), dBx, dBy, dFx, dFy] = register_images(dMove(:,:,iJ,iI-1), dFix, SOptions);   
+                [dImgReg(:,:,iJ,iI), dBx, dBy, dFx, dFy] = register_images(dMove(:,:,iJ,iI-1), dFix(:,:,iJ), SOptions);   
             end
         
             if dDeformRes ~= 0

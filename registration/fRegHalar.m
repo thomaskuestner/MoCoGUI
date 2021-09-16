@@ -51,9 +51,15 @@ steps = iN3D * (iNGates-1); % for waitbar
 cImgFix = cell(iN3D,1);
 cImgMove = cell(iN3D,(iNGates-1));
 
-dImgFix = uint16(dFix./max(dFix(:)).*(2.^16 - 1));
-dImgMove = uint16(dMove./max(dMove(:)).*(2.^16 - 1));
+dFix = (dFix - min(dFix(:)))./(max(dFix(:)) - min(dFix(:)));
+dMove = (dMove - min(dMove(:)))./(max(dMove(:)) - min(dMove(:)));
+
+dImgFix = uint16(dFix./max(dFix(:)).*(1024 - 1));
+dImgMove = uint16(dMove./max(dMove(:)).*(1024 - 1));
     
+if(~exist(sResultPath,'dir'))
+    mkdir(sResultPath);
+end
     
 for iJ=1:iN3D
     if(iDim == 1) % 2D reg

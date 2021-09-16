@@ -23,7 +23,12 @@ function [dFix, dMove, SDeform, dImgReg, cVoxelInterp] = fRegLAP(dFix, dMove, sP
 h = fwaitbar(0,'Running Registration. Please wait!'); st=0;
 
 %% prepare images
-[ SOptions, dDeformRes ] = fReadLAPParam(sParafile);
+if(ischar(sParafile))
+    [ SOptions, dDeformRes ] = fReadLAPParam(sParafile);
+else
+    dDeformRes = 0;
+    SOptions = sParafile;
+end
 
 if dDeformRes ~= 0
     % interpolate to isotropic resolution
@@ -80,6 +85,7 @@ steps = iN3D * (iNGates-1); % for waitbar
 
 dFix = (dFix - min(dFix(:)))./(max(dFix(:)) - min(dFix(:)));
 dMove = (dMove - min(dMove(:)))./(max(dMove(:)) - min(dMove(:)));
+dImgReg(:,:,:,1) = dFix;
 
 % Parameters for optical flow estimation:
 FilterSizes =  2.^(SOptions.PyrMax:-1:SOptions.PyrMin);   % scale levels (assumes maximum flow = 2^4 pixels)
@@ -102,11 +108,11 @@ for iJ = 1:iN3D
             if(nDimImg == 2) % 2D image
                 dImgReg(:,:,iJ,1) = dFix;
                 uLAP = CG_MultiScale_LAP(dFix, dMove(:,:,iI-1), SOptions.PyrMax, SOptions.Nf);
-                dImgReg(:,:,iJ,iI) = imshift(dMove(:,:,iI-1),uLAP);    
+                dImgReg(:,:,iJ,iI) = imshift(dMove(:,:,iI-1),{-uLAP{1},-uLAP{2}});    
             elseif(nDimImg == 3) % 3D image
                 dImgReg(:,:,iJ,1) = dFix(:,:,iJ);
                 uLAP = CG_MultiScale_LAP(dFix, dMove(:,:,iJ,iI-1), SOptions.PyrMax, SOptions.Nf);
-                dImgReg(:,:,iJ,iI) = imshift(dMove(:,:,iJ,iI-1),uLAP);    
+                dImgReg(:,:,iJ,iI) = imshift(dMove(:,:,iJ,iI-1),{-uLAP{1},-uLAP{2}});    
             end
             
             if dDeformRes ~= 0
@@ -127,11 +133,13 @@ for iJ = 1:iN3D
             dImgReg(:,:,:,1) = dFix;
             if strcmp(SOptions.Algorithm, 'fast')
                 uLAP = CG_MultiScale_LAP3D_Fast(dFix, dMove(:,:,:,iI-1), FilterSizes, SOptions.PreFilt, SOptions.MedFilt);
-                dImgReg(:,:,:,iI) = imshift_3D(dMove(:,:,:,iI-1),uLAP,SOptions.Interpolation);    
+                dImgReg(:,:,:,iI) = imshift_3D(dMove(:,:,:,iI-1),{-uLAP{1},-uLAP{2},-uLAP{3}},SOptions.Interpolation);    
             else
                 % slower
                 uLAP = CG_MultiScale_LAP3D(dFix, dMove(:,:,:,iI-1), FilterSizes, SOptions.PreFilt, SOptions.MedFilt);
-                dImgReg(:,:,:,iI) = imshift_3D(dMove(:,:,:,iI-1),uLAP,SOptions.Interpolation);
+                dImgReg(:,:,:,iI) = imshift_3D(dMove(:,:,:,iI-1),{-uLAP{1},-uLAP{2},-uLAP{3}},SOptions.Interpolation);
+                % forward
+%                 dImgReg(:,:,:,iI) = imshift_3D(dFix,uLAP,SOptions.Interpolation);
             end
             
             if dDeformRes ~= 0

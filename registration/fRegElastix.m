@@ -26,6 +26,7 @@ if ispc
 else
     elastix = 'elastix';
     transformix = 'transformix';
+    setenv('LD_LIBRARY_PATH', [sRegPath,filesep,'registration',filesep,'elastix']);
 end
 
 if(~exist(sResultPath,'dir'))

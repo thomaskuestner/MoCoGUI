@@ -13,7 +13,7 @@ function h = fwaitbar( iVal, h )
 % -------------------------------------------------------------------------
 
 if(nargin < 2)
-    waitbar(iVal); % just update current waitbar
+    h = waitbar(iVal); % just update current waitbar
 else 
     if ischar(h) || iscellstr(h) % init
         sMessage = h;
@@ -23,7 +23,7 @@ else
         set(haxes.Title,'Color','w','FontSize',12);
         drawnow expose;
     elseif all(ishghandle(h, 'figure')) % update
-        waitbar(iVal,h);        
+        h = waitbar(iVal,h);        
     end
 end
 

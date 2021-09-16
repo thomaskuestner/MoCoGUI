@@ -120,16 +120,16 @@ end
 % first scale dynamic ranges of images to fit in {0,...,grayscale-1}
 % otherwise there will be an inconsistency of the results
 if(strcmp(scaleTo,'own'))
-    pic_a=(pic_a-min(pic_a(:)))*(x(end)-x(1))./(max(pic_a(:))-min(pic_a(:))); 
-    pic_b=(pic_b-min(pic_b(:)))*(x(end)-x(1))./(max(pic_b(:))-min(pic_b(:))); 
+    pic_a=double((pic_a-min(pic_a(:)))*(x(end)-x(1))./(max(pic_a(:))-min(pic_a(:)))); 
+    pic_b=double((pic_b-min(pic_b(:)))*(x(end)-x(1))./(max(pic_b(:))-min(pic_b(:)))); 
 elseif(strcmp(scaleTo,'pic_a'))
     maxScale = max(pic_a(:));
-    pic_a=(pic_a-min(pic_a(:)))*(x(end)-x(1))./(maxScale-min(pic_a(:))); 
-    pic_b=(pic_b-min(pic_b(:)))*(x(end)-x(1))./(maxScale-min(pic_b(:)));
+    pic_a=double((pic_a-min(pic_a(:)))*(x(end)-x(1))./(maxScale-min(pic_a(:)))); 
+    pic_b=double((pic_b-min(pic_b(:)))*(x(end)-x(1))./(maxScale-min(pic_b(:))));
 elseif(strcmp(scaleTo,'pic_b'))
     maxScale = max(pic_b(:));
-    pic_a=(pic_a-min(pic_a(:)))*(x(end)-x(1))./(maxScale-min(pic_a(:))); 
-    pic_b=(pic_b-min(pic_b(:)))*(x(end)-x(1))./(maxScale-min(pic_b(:)));
+    pic_a=double((pic_a-min(pic_a(:)))*(x(end)-x(1))./(maxScale-min(pic_a(:)))); 
+    pic_b=double((pic_b-min(pic_b(:)))*(x(end)-x(1))./(maxScale-min(pic_b(:))));
 end
 
 

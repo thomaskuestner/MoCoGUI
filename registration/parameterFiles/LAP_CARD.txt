@@ -1,6 +1,6 @@
 var = Val % DO NOT CHANGE THIS LINE!
 dDeformRes = 0
-SOptions.PyrMax = 4 
+SOptions.PyrMax = 5 
 SOptions.PyrMin = 0
 SOptions.PreFilt = 1        % Pre-filtering
 SOptions.MedFilt = 1        % median filtering

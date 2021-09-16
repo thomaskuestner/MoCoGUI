@@ -1,0 +1,46 @@
+#
+# Image parameters
+#
+
+Resolution level 1
+Downsampling size                   = 8 8 8
+Downsampling interval               = [ 0 2 ]
+           
+Resolution level 2
+Downsampling size                   = 4 4 4
+Downsampling interval               = [ 3 5 ]
+
+Resolution level 3
+Downsampling size                   = 2 2 2
+Downsampling interval               = [ 6 8 ]
+
+
+#
+# Hierarchy parameters
+#
+        
+Adaptive splitting                  = 1
+Splitting technique                 = SIM
+Splitcenter regularizer             = 10
+Folding correction                  = 1
+Maximum registration level          = 10
+Maximum block size                  = 1000
+Minimum block size                  = 10
+Minimum edge length                 = 1
+        
+#
+# Registration parameters
+#
+        
+Similarity measure                  = SSD
+Similarity threshold                = 0.05
+Translation                         = 1
+Rotation                            = 0
+Scaling                             = 1
+Shearing                            = 1
+Block range                         = 50
+Length of steps, start              = 4   
+Length of steps, minimum            = 1   
+Length of steps, ratio              = 0
+Padding value                       = -1
+Interpolation mode                  = Linear
